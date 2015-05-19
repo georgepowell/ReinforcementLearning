@@ -1,0 +1,56 @@
+function [neurons, learning_curve] = train_network(epsilon, learning_rate, trial_runs, alg_config, epsilon_config, plot_config)
+% Trains the network once and returns the final neural network and learning
+% curve
+neurons = rand(100, 8);
+learning_curve = [];
+colormap gray;
+original_epsilon = epsilon;
+
+for j=1:trial_runs
+    
+    if (strcmp(epsilon_config, 'linear'))
+        % If we are linearly increasing epsilon, recalculate based on which
+        % trial run we are on.
+        epsilon = original_epsilon + (1.0 - original_epsilon) * j / trial_runs;
+    end
+    
+    % Initialise state randomly and run trial - storing num_steps, states,
+    % and updated neurons.
+    [num_steps, neurons, states]  = trial_run(1 + floor(99*rand), neurons, epsilon, learning_rate, alg_config, 2500);
+    learning_curve(end + 1) = num_steps;
+    
+    % Draw if configured to.
+    if (strcmp(plot_config, 'draw'))
+        figure(2);
+        plot(learning_curve);
+        figure(1);
+        img = imagesc(reshape(max(neurons'), 10, 10));
+        hold on;
+        for i=2:length(states)
+            [ x, y ] = robot_xy( states(i - 1) );
+            [ x_new, y_new ] = robot_xy( states(i) );
+            plot([ y, y_new], [x, x_new], 'Color', 'r', 'LineWidth', 2);
+        end
+        hold off;
+        pause(0.1);
+    end
+end
+    
+% Draw if configured to.
+if (strcmp(plot_config, 'draw_end'))
+    figure(2);
+    plot(learning_curve);
+    figure(1);
+    img = imagesc(reshape(max(neurons'), 10, 10));
+    hold on;
+    for i=2:length(states)
+        [ x, y ] = robot_xy( states(i - 1) );
+        [ x_new, y_new ] = robot_xy( states(i) );
+        plot([ y, y_new], [x, x_new], 'Color', 'r', 'LineWidth', 2);
+    end
+    hold off;
+    pause(0.1);
+end
+
+end
+
